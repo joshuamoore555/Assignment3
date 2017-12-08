@@ -26,28 +26,30 @@ class SegmentedHashMap<K,V> implements Map<K,V> {
     public boolean add(K key, V value) {
         int hashIndex = hash(key);
         HashMap<K,V> segment = segments[hashIndex];
-        synchronized (segment){
             if(key == null){
                 return false;
             }
             else{
-                segment.put(key,value);
-                return true;
+                synchronized (segment) {
+                    segment.put(key, value);
+                    return true;
+                }
             }
-        }
     }
+
     
     public boolean remove(K key) {
         int hashIndex = hash(key);
         HashMap<K,V> segment = segments[hashIndex];
-        synchronized (segment) {
+
             if (key == null) {
                 return false;
             } else {
-                segment.remove(key);
-                return true;
-            }
-        }
+                synchronized (segment) {
+                    segment.remove(key);
+                    return true;
+                }
+         }
     }
     
     public boolean contains(K key) {
@@ -61,11 +63,11 @@ class SegmentedHashMap<K,V> implements Map<K,V> {
     public V get(K key) {
         int hashIndex = hash(key);
         HashMap<K, V> segment = segments[hashIndex];
-        synchronized (segment) {
             if (key == null) {
                 return null;
             } else {
-                return segment.get(key);
+                synchronized (segment) {
+                 return segment.get(key);
             }
         }
     }

@@ -62,7 +62,7 @@ class ResultAggregator  {
 						 sum_rate_sq += r*r;
 						 sum_delay += f_delay;
 
-						 System.out.println( "Delay is " + f_delay + " secs" + " operations is " + nv );
+						 System.out.println( "delay is " + f_delay + " secs" + " operations is " + nv );
 					     } else {
 						 System.out.println( "delay is " + f_delay + " secs (warmup)" );
 					     }
@@ -243,7 +243,7 @@ class Contents {
     private int values[];
     private Map<IntValue,IntValue> hashtable;
     private LFSR generator[];
-    public static final int MAX_LOG_THREADS = 3;
+    public static final int MAX_LOG_THREADS = 5;
     public static final int MAX_THREADS = 1 << MAX_LOG_THREADS;
     public static final int VALID_RANGE = LFSR.RANGE << 1;
     public static final int USED_RANGE = LFSR.RANGE << MAX_LOG_THREADS;
@@ -483,9 +483,7 @@ class Driver {
         System.out.println("Hashtable concurrency " + concurrency );
 
 	Contents contents = new Contents( set_size, nthreads );
-	ResultAggregator agg
-	    = new ResultAggregator( num_rounds, num_contains, nthreads,
-				    contents );
+	ResultAggregator agg = new ResultAggregator( num_rounds, num_contains, nthreads, contents );
 
 	TestProcess[] processes = new TestProcess[nthreads];
 
@@ -502,15 +500,12 @@ class Driver {
 	    System.exit( 1 );
 	}
 
-
 	// Initialize the hash table with values to start non-empty
 	contents.initialize( hashtable );
 
 	// Create all of the threads
 	for( int i=0; i < nthreads; ++i ) {
-	    processes[i]
-		= new TestProcess( set_size, num_contains, i,
-				   hashtable, agg, contents );
+	    processes[i] = new TestProcess( set_size, num_contains, i, hashtable, agg, contents );
 	}
 
 	// Start all of the threads and let them warmup.

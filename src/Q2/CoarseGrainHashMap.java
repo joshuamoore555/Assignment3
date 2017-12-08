@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 class CoarseGrainHashMap<K,V> implements Map<K,V> {
     private final HashMap<K,V> map;
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     CoarseGrainHashMap( int capacity ) {
 	map = new HashMap<>();

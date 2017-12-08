@@ -8,150 +8,113 @@ package Q2;/*
  * Copyright 2006 Elsevier Inc. All rights reserved.
  */
 
-import Q2.Map;
-import java.util.concurrent.atomic.*;
+
+import java.util.concurrent.atomic.AtomicMarkableReference;
 
 public class BucketListMap<K, V> implements Map<K, V> {
     private Node head;
+
     static public final int WORD_SIZE = 23;
     static private final int LO_BIT = 1;
     static private final int HI_BIT = 1 << (WORD_SIZE - 1);
     static private final int REG_BIT = 1 << WORD_SIZE;
     static private final int PRE_MASK = (1 << (WORD_SIZE - 1)) - 1;
-    
-    private class Node {
-	int hash;
-	Node next;
-	K key;
-	V value;
 
-	Node( int hash ) {
-	    this.hash = hash;
+	/**
+	 * Constructor
+	 */
+	public BucketListMap() {
+		this.head = new Node( 0 );
+		this.head.next = new AtomicMarkableReference<Node>(new Node(Integer.MAX_VALUE), false); //tail
 	}
 
-	Node( int hash, K key, V value ) {
-	    this.hash = hash;
-	    this.key = key;
-	    this.value = value;
+	private BucketListMap(Node e) {
+		this.head = e;
 	}
 
-    }
-    private class Window {
-	public Node pred;
-	public Node curr;
-	Window(Node pred, Node curr) {
-	    this.pred = pred;
-	    this.curr = curr;
-	}
-    }
+	public boolean add(K key, V value) {
+		int hash = getHash(key);
+		boolean splice;
+		while(true) {
+			Window window = find(head, hash);
+			Node pred = window.pred;
+			Node curr = window.curr;
 
-    private Window find( Node head, int hash ) {
-	Node pred = null;
-	Node curr = null;
-	Node succ = null;
-	while( true ) {
-	    pred = head;
-	    curr = pred.next;
-	    while( true ) {
-		succ = curr.next;
-		if( curr.hash >= hash )
-		    return new Window( pred, curr );
-		pred = curr;
-		curr = succ;
-	    }
+			if( curr.hash == hash ) {
+				return false;
+			} else {
+				Node entry = new Node(hash, key, value);
+				entry.next.set(curr,false);
+				splice = pred.next.compareAndSet(curr, entry, false, false);
+				if(splice){
+					return true;
+				}else{
+					continue;
+				}
+			}
+		}
 	}
-    }
 
-    public boolean contains( K key ) {
+	public boolean remove(K key) {
+		int hash = getHash(key);
+		boolean snip;
+		while(true) {
+			Window window = find(head, hash);
+			Node pred = window.pred;
+			Node curr = window.curr;
+			if(curr.hash != hash)
+				return false;
+			else {
+				// Unlink node
+				snip = pred.next.attemptMark(curr, true);
+				if (snip) {
+					return true;
+				}else {
+					continue;
+				}
+			}
+		}
+	}
+
+    public boolean contains(K key) {
 		return get(key) != null;
     }
 
     public V get(K key) {
-		int hash = getHash( key );
+		int hash = getHash(key);
 		Node curr = this.head;
-		while(curr.hash < hash) {
-			curr = curr.next;
+		while(curr.hash < hash){
+			curr = curr.getNext();
 		}
 		return (curr.hash == hash) ? curr.value : null;
     }
 
-    public boolean add( K key, V value ) {
-	int hash = getHash( key );
-	while( true ) {
-	    Window window = find( head, hash );
-	    Node pred = window.pred;
-	    Node curr = window.curr;
-	    if( curr.hash == hash ) {
-		return false;
-	    } else {
-		Node node = new Node( hash, key, value );
-		node.next = curr;
-		pred.next = node;
-		return true;
-	    }
-	}
-    }
-
-    private Node addSentinel( int bucket ) {
+    private Node addSentinel(int bucket) {
 	int hash = makeSentinelHash( bucket );
-	boolean splice;
-	while( true ) {
+	while(true) {
 	    Window window = find( head, hash );
 	    Node pred = window.pred;
 	    Node curr = window.curr;
-	    if( curr.hash == hash )
+	    if(curr.hash == hash)
 		return curr; // all sentinels are equal
 	    else {
-		Node node = new Node( hash );
-		node.next = curr;
-		pred.next = node;
+		Node node = new Node(hash);
+		node.next = new AtomicMarkableReference<>(curr,false);
+		pred.next = new AtomicMarkableReference<>(node, false);
 		return node; // return the newly created node
 	    }
 	}
     }
 
-    public boolean remove( K key ) {
-	int hash = getHash( key );
-	while( true ) {
-	    Window window = find( head, hash );
-	    Node pred = window.pred;
-	    Node curr = window.curr;
-	    if( curr.hash != hash )
-		return false;
-	    else {
-		// Unlink node
-		Node succ = curr.next;
-		pred.next = succ;
-		return true;
-	    }
-	}
-    }
-
-    /**
-     * Constructor
-     */
-    public BucketListMap() {
-	this.head = new Node( 0 );
-	Node tail = new Node( Integer.MAX_VALUE );
-	this.head.next = tail;
-	tail.next = null;
-    }
-    private BucketListMap(Node e) {
-	this.head  = e;
-    }
-    /**
-     * Restricted-size hash code
-     * No need to modify this
-     * @param x object to hash
-     * @return hash code
-     */
     public static int hashCode(Object x) {
 	return x.hashCode() & PRE_MASK;
     }
+
     private int getHash( K key ) {
 	int code = hashCode( key );
 	return reverse(code | REG_BIT);
     }
+
     private int makeSentinelHash(int key) {
 	return reverse(key & PRE_MASK);
     }
@@ -169,21 +132,97 @@ public class BucketListMap<K, V> implements Map<K, V> {
 	}
 	return result;
     }
+
     public BucketListMap<K,V> getSentinel(int index) {
-	Node node = addSentinel( index );
-	if( node == null )
-	    return null;
-	return new BucketListMap<K,V>( node );
-    }
+		int key = makeSentinelHash(index);
+		boolean splice;
+		while(true) {
+			Window window = find(head, key);
+			Node pred = window.pred;
+			Node curr = window.curr;
+
+			if (curr.hash == key) {
+				return new BucketListMap<>(curr);
+			} else {
+				Node node = new Node(key);
+				node.next.set(pred.next.getReference(), false);
+				splice = pred.next.compareAndSet(curr, node, false, false);
+				if (splice) {
+					return new BucketListMap<>(node);
+				} else {
+					continue;
+				}
+			}
+		}}
     
     public int debuggingCountElements() {
 	int count = 0;
-	Node curr = head.next;
+	Node curr = head.getNext();
 	while ( curr != null ) {
 	    if( curr.value != null ) // is this a sentinel node?
 		++count;
-	    curr = curr.next;
+	    curr = curr.getNext();
 	}
 	return count;
     }
+
+	private class Node {
+		K key;
+		V value;
+		int hash;
+		AtomicMarkableReference<Node> next;
+
+		Node(int hash) {
+			this.hash = hash;
+			this.next  = new AtomicMarkableReference<Node>(null, false);
+		}
+
+		Node(int hash, K key, V value) {
+			this.hash = hash;
+			this.key = key;
+			this.value = value;
+			this.next  = new AtomicMarkableReference<Node>(null, false);
+		}
+
+		Node getNext() {
+			boolean[] cMarked = {false};
+			boolean[] sMarked = {false};
+			Node entry = this.next.get(cMarked);
+			while (cMarked[0]) {
+				Node succ = entry.next.get(sMarked);
+				this.next.compareAndSet(entry, succ, true, sMarked[0]);
+				entry = this.next.get(cMarked);
+			}
+			return entry;
+		}
+
+	}
+
+	private class Window {
+		public Node pred;
+		public Node curr;
+
+		Window(Node pred, Node curr) {
+			this.pred = pred;
+			this.curr = curr;
+		}
+	}
+
+	private Window find(Node head, int hash) {
+		Node pred = null;
+		Node curr = null;
+		Node succ = null;
+
+		while(true){
+			pred = head;
+			curr = pred.getNext();
+			while(true){
+				succ = curr.getNext();
+				if( curr.hash >= hash )
+					return new Window(pred, curr);
+				pred = curr;
+				curr = succ;
+			}
+		}
+	}
 }
