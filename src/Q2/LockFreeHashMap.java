@@ -45,10 +45,7 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     public boolean remove(K key) {
         int myBucket = Math.abs(BucketListMap.hashCode(key) % bucketSize.get());
         BucketListMap<K, V> b = getBucketListMap(myBucket);
-        if (!b.remove(key)) {
-            return false;
-        }
-        return true;
+        return b.remove(key);
     }
 
     public boolean contains(K key) {

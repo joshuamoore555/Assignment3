@@ -15,25 +15,25 @@ public interface Map<K,V> {
      * @param v value to add
      * @return whether key was absent
      */
-    public boolean add(K k, V v);
+    boolean add(K k, V v);
     /**
      * remove key from bucket
      * @param k key to remove
      * @return whether key was found
      */
-    public boolean remove(K k);
+    boolean remove(K k);
     /**
      * is key in bucket?
      * @param k key being sought
      * @return whether key is present
      */
-    public boolean contains(K k);
+    boolean contains(K k);
     /**
      * retrieve value stored for key
      * @param k key being sought
      * @return value if key is present or null
      */
-    public V get(K k);
+    V get(K k);
     /**
      * debugging: validate number of elements
      * this method is only called from the main thread
@@ -41,5 +41,5 @@ public interface Map<K,V> {
      * execution.
      * @return number of elements
      */
-    public int debuggingCountElements();
+    int debuggingCountElements();
 }

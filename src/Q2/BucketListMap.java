@@ -34,7 +34,6 @@ public class BucketListMap<K, V> implements Map<K, V> {
 
 	public boolean add(K key, V value) {
 		int hash = getHash(key);
-		boolean splice;
 		while(true) {
 			Window window = find(head, hash);
 			Node pred = window.pred;
@@ -43,14 +42,9 @@ public class BucketListMap<K, V> implements Map<K, V> {
 			if( curr.hash == hash ) {
 				return false;
 			} else {
-				Node entry = new Node(hash, key, value);
-				entry.next.set(curr,false);
-				splice = pred.next.compareAndSet(curr, entry, false, false);
-				if(splice){
-					return true;
-				}else{
-					continue;
-				}
+                Node node = new Node(hash,key,value);
+                node.next = new AtomicMarkableReference<>(curr, false);
+                if (pred.next.compareAndSet(curr, node, false, false)) {return true;}
 			}
 		}
 	}
@@ -65,14 +59,12 @@ public class BucketListMap<K, V> implements Map<K, V> {
 			if(curr.hash != hash)
 				return false;
 			else {
-				// Unlink node
-				snip = pred.next.attemptMark(curr, true);
-				if (snip) {
-					return true;
-				}else {
-					continue;
-				}
-			}
+                Node succ = curr.next.getReference();
+                snip = curr.next.attemptMark(succ, true);
+                if (!snip) continue;
+                    pred.next.compareAndSet(curr, succ, false, false);
+                return true;
+            }
 		}
 	}
 

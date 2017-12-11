@@ -88,7 +88,7 @@ class ResultAggregator  {
     }
 
     public double getAvgDelay() {
-	return (double)sum_delay / (double)(num_rounds);
+	return sum_delay / (double)(num_rounds);
     }
 
     public double getAvgRate() {
@@ -175,7 +175,7 @@ class LFSR19 {
     public void syncstate( LFSR19 l ) {
 	lfsr = l.lfsr;
     }
-};
+}
 
 class LFSR {
     public static final int BITS = 17;
@@ -204,7 +204,7 @@ class LFSR {
     public void syncstate( LFSR l ) {
 	lfsr = l.lfsr;
     }
-};
+}
 
 class LFSR8 {
     public static final int BITS = 8;
@@ -233,7 +233,7 @@ class LFSR8 {
     public void syncstate( LFSR8 l ) {
 	lfsr = l.lfsr;
     }
-};
+}
 
 
 class Contents {
@@ -324,7 +324,7 @@ class Contents {
 	generator[tid].fastforward(nthreads-1);
 	return ret;
     }
-};
+}
 
 /*===========================================================
  * Process definition for processes that will generate
