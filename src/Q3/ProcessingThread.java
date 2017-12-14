@@ -1,13 +1,14 @@
 package Q3;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 // Do not modify this class, except for the queueing
 class ProcessingThread extends Thread {
     final Valuation val;
-    final LinkedBlockingQueue<Event> queue;
+    final PriorityBlockingQueue<Event> queue;
 
-    ProcessingThread( Valuation val, LinkedBlockingQueue<Event> queue ) {
+    ProcessingThread( Valuation val, PriorityBlockingQueue<Event> queue ) {
         this.val = val;
         this.queue = queue;
     }

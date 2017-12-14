@@ -5,11 +5,11 @@ package Q2;/*
  */
 import java.util.HashMap;
 
-class SegmentedHashMap<K,V> implements Map<K,V> {
+public class SegmentedHashMap<K,V> implements Map<K,V> {
     private final HashMap<K,V>[] segments;
     private final int num_segments;
 
-    SegmentedHashMap(int numseg, int capacity) {
+    public SegmentedHashMap(int numseg, int capacity) {
 	    num_segments = numseg;
         segments = new HashMap[capacity];
         for(int i = 0; i < capacity; i++){
@@ -36,12 +36,10 @@ class SegmentedHashMap<K,V> implements Map<K,V> {
                 }
             }
     }
-
     
     public boolean remove(K key) {
         int hashIndex = hash(key);
         HashMap<K,V> segment = segments[hashIndex];
-
             if (key == null) {
                 return false;
             } else {

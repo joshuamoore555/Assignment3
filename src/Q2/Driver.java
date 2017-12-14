@@ -465,8 +465,7 @@ class Driver {
 	    System.exit( 1 );
 	}
 
-	if( type.equalsIgnoreCase( "lockfree" )
-	    && Contents.TOTAL_RANGE > (1<<BucketListMap.WORD_SIZE) ) {
+	if( type.equalsIgnoreCase( "lockfree" ) && Contents.TOTAL_RANGE > (1<<BucketListMap.WORD_SIZE) ) {
 	    System.err.println( "Random elements will contain hash clashes. " );
 	    System.exit( 1 );
 	}

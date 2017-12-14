@@ -16,6 +16,8 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     protected AtomicInteger bucketSize;
     protected AtomicInteger setSize;
     private static final double THRESHOLD = 4.0;
+    private volatile int bucketLength = 0;
+
     /**
      * Constructor
      * @param capacity max number of bucket
@@ -26,12 +28,14 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
 		bucket[0] = new BucketListMap<K,V>();
 		bucketSize = new AtomicInteger(2);
 		setSize = new AtomicInteger(0);
+		bucketLength = bucket.length;
     }
 
     public boolean add(K key, V value) {
 		int myBucket = Math.abs(BucketListMap.hashCode(key) % bucketSize.get());
 		BucketListMap<K,V> b = getBucketListMap(myBucket);
-		if (!b.add(key, value)) {
+		if (b.add(key, value) == false) {
+		    System.out.println("Hash Clash");
 			return false;
 		}
 		int setSizeNow = setSize.getAndIncrement();
@@ -90,4 +94,13 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
             count = bucket[0].debuggingCountElements();
         return count;
     }
+
+//    public void resize(int length){
+//        if(length == bucketLength) {
+//            BucketListMap<K, V>[] newBucket = new BucketListMap[bucket.length * 2];
+//            bucketLength = newBucket.length;
+//            System.arraycopy(bucket, 0, newBucket, 0, bucket.length);
+//            bucket = newBucket;
+//        }
+//    }
 }

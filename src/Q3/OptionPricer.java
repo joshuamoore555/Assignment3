@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.io.File;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayDeque;
@@ -63,6 +64,8 @@ public class OptionPricer {
 	    return;
 	}
 
+
+
 	val.start();
 	val.EventLoop( new EventStream( traceFile, traceTime, replaySpeed ) );
     }
@@ -78,7 +81,7 @@ class Valuation {
     // You may modify these variables
     private final InstrumentsTable instruments;
     private final OptionsTable options;
-    private final LinkedBlockingQueue<Event> queue;
+    private final PriorityBlockingQueue<Event> queue;
     private int num_late_analyses;
     private int num_analyses;
 
@@ -86,7 +89,7 @@ class Valuation {
     Valuation( int numSteps, int numThreads ) {
         instruments = new InstrumentsTable();
         options = new OptionsTable();
-        queue = new LinkedBlockingQueue<Event>();
+        queue = new PriorityBlockingQueue<Event>();
         num_analyses = 0;
         num_late_analyses = 0;
         NUM_STEPS = numSteps;
