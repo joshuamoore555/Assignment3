@@ -13,16 +13,13 @@ public class Workshop {
     private static AtomicInteger reindeerCount = new AtomicInteger(0);
 
     public static void main(String args[]) {
-        new Santa().start();
-
         for(int i = 0; i < 40; i++){
             new Elf("Elf " + i).start();
         }
+        new Santa().start();
         new Reindeer("Prancer").start();
         new Reindeer("Dancer").start();
-
     }
-
 
     public static class Santa extends Thread{
         @Override
@@ -33,7 +30,6 @@ public class Workshop {
                         System.out.println("There are "+ elfCount.get() + " elves and " + reindeerCount.get() + " reindeer so Santa entered");
                         santaSemaphore.acquire();
                         santaCount.getAndIncrement();
-
 
                         System.out.println("Santa left");
                         santaSemaphore.release();
@@ -60,11 +56,9 @@ public class Workshop {
                 while (true) {
                     elfSemaphore.release(1);
                     elfCount.getAndIncrement();
-                    System.out.println(name + " entered                                                                                                                              " + elfCount.get() + "    "+elfSemaphore.availablePermits());
+                    System.out.println(name + " entered                 " + elfCount.get() + " "+elfSemaphore.availablePermits());
 
-
-
-                    System.out.println(name + " left                                                                                                                                 " + elfCount.get()+ "    "+elfSemaphore.availablePermits());
+                    System.out.println(name + " left                 " + elfCount.get()+ " "+elfSemaphore.availablePermits());
                     elfSemaphore.acquire(1);
                     elfCount.getAndDecrement();
                     Thread.sleep(2000);
