@@ -4,16 +4,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Workshop {
-    static Semaphore elfSemaphore = new Semaphore(0);
-    static Semaphore reindeerSemaphore = new Semaphore(1);
-    static Semaphore santaSemaphore = new Semaphore(1);
+    private static AtomicInteger numberOfElves = new AtomicInteger(4);
+    static Semaphore elvesOutside = new Semaphore(numberOfElves.get(), true);
+    static Semaphore elvesInside = new Semaphore(0, true);
 
-    private static AtomicInteger santaCount = new AtomicInteger(0);
-    private static AtomicInteger elfCount = new AtomicInteger(0);
-    private static AtomicInteger reindeerCount = new AtomicInteger(0);
+    static Semaphore santaSemaphore = new Semaphore(1, true);
+    static Semaphore reindeerSemaphore = new Semaphore(1, true);
+    static Semaphore mutex = new Semaphore(1, true);
 
     public static void main(String args[]) {
-        for(int i = 0; i < 40; i++){
+        for(int i = 0; i < numberOfElves.get(); i++){
             new Elf("Elf " + i).start();
         }
         new Santa().start();
@@ -26,16 +26,23 @@ public class Workshop {
         public void run() {
             try {
                 while (true) {
-                    if(elfCount.get() == 0 && reindeerCount.get() == 0){
-                        System.out.println("There are "+ elfCount.get() + " elves and " + reindeerCount.get() + " reindeer so Santa entered " + elfSemaphore.availablePermits());
-                        santaSemaphore.acquire();
-                        santaCount.getAndIncrement();
+                    mutex.acquire(1);
+                    santaSemaphore.acquire(1);
+                    System.out.println("Santa Waiting..."  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    reindeerSemaphore.acquire(1); //wait for reindeer to leave
+                    elvesOutside.acquire(numberOfElves.get()); //wait for elves to be outside
+                    mutex.release(1);
 
-                        System.out.println("Santa left");
-                        santaSemaphore.release();
-                        santaCount.getAndDecrement();
-                    }
+                    System.out.println("Santa Entered"  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    elvesOutside.release(numberOfElves.get()); //allow elves to enter
+                    reindeerSemaphore.release(1); //allow reindeer to attempt to enter
+
+
+                    santaSemaphore.release(1);//santa leaves
+                    System.out.println("Santa left"  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
                     Thread.sleep(3000);
+
+
                 }
             }catch (InterruptedException e) {
                 e.printStackTrace();
@@ -54,13 +61,15 @@ public class Workshop {
         public void run() {
             try {
                 while (true) {
-                    elfSemaphore.release(1);
-                    elfCount.getAndIncrement();
-                    System.out.println(name + " entered              " + elfCount.get() + " "+elfSemaphore.availablePermits());
+                    elvesOutside.acquire(1);
+                    elvesInside.release(1);
+                    System.out.println(name + " entered " + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
 
-                    System.out.println(name + " left                 " + elfCount.get()+ " "+elfSemaphore.availablePermits());
-                    elfSemaphore.acquire(1);
-                    elfCount.getAndDecrement();
+
+                    elvesInside.acquire(1);
+                    elvesOutside.release(1);
+                    System.out.println(name + " left " + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+
                     Thread.sleep(3000);
                 }
             }catch (InterruptedException e) {
@@ -80,19 +89,27 @@ public class Workshop {
         public void run() {
             try {
                 while (true) {
-                    if(santaCount.get() == 0 && elfCount.get() >= 4){
-                        reindeerSemaphore.acquire(1);
-                        elfSemaphore.acquire(2);
-                        System.out.println(name + " the Reindeer entered." + " He has " + elfCount.get() + " lads minding him. " + elfSemaphore.availablePermits());
-                        reindeerCount.getAndIncrement();
+                    //attempt to enter
+                    mutex.acquire(1);
+                    reindeerSemaphore.acquire(1);
+                    System.out.println(name + " Waiting..."  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    santaSemaphore.acquire(1); //wait for santa to leave
+                    System.out.println("Santa isn't there!"  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    elvesInside.acquire(4); //wait for 4 elves to enter
+                    System.out.println("There are four elves! " + elvesInside.availablePermits() + "  " + elvesOutside.availablePermits());
+                    mutex.release(1);
+                    elvesInside.release(2); //2 elves can leave
 
 
-                        System.out.println("Reindeer left");
-                        reindeerSemaphore.release(1);
-                        elfSemaphore.release(2);
-                        reindeerCount.getAndDecrement();
-                        Thread.sleep(3000);
-                    }
+                    System.out.println(name + " the Reindeer entered. " + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    santaSemaphore.release(1); //santa can enter
+
+                    reindeerSemaphore.release(1);
+                    elvesInside.release(2);
+                    System.out.println(name + " the Reindeer left." + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+
+                    Thread.sleep(3000);
+
                 }
             }catch (InterruptedException e) {
                 e.printStackTrace();

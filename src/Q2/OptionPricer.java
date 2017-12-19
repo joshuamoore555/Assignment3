@@ -1,10 +1,9 @@
-package Q3;
+package Q2;
 /*
  * PreTrade.java
  *
  * (C) Hans Vandierendonck, Giorgis Georgakoudis, 2017
  */
-import Q2.LockFreeHashMap;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -371,7 +370,9 @@ class Valuation {
     Valuation( int numSteps, int numThreads ) {
 	// portfolios = new PortfolioTable();
 	instruments = new InstrumentsTable();
-	options = new OptionsTable();
+	options = new OptionsTable(); //split the options table here
+        //put into an array of threads.length
+
 	queue = new LinkedBlockingQueue<Event>();
 	num_analyses = 0;
 	num_late_analyses = 0;
@@ -383,7 +384,7 @@ class Valuation {
     // Do not modify this method
     public void start() {
 	for( int i=0; i < threads.length; ++i ) {
-	    threads[i] = new ProcessingThread( this, queue );
+	    threads[i] = new ProcessingThread( this, queue ); //send the individual option tables here from the array
 	    threads[i].start();
 	}
     }
@@ -510,25 +511,21 @@ class Valuation {
     void processTrade( String symbol, double bidPrice, double askPrice ) {
 	// If we cannot change the state from IDLE to BUSY, it must have been
 	// set to LATE, so we return immediately.
-	if( !instruments.update( symbol,
-				 InstrumentsTable.IDLE,
-				 InstrumentsTable.BUSY ) )
-	    return;
-
+	if( !instruments.update( symbol, InstrumentsTable.IDLE, InstrumentsTable.BUSY ) ) {
+        return;
+    }
 	// System.out.println( "Instrument " + symbol + " acquired" );
-
 	// Recalculate all options on this instrument
 	long tm_start = System.nanoTime();
 	int num_processed = 0;
+
 	for( Option option : options.get( symbol ) ) {
 	    // Abort if a new trade update have arrived
 	    if( instruments.get( symbol ).get() == InstrumentsTable.LATE ) {
 		// System.out.println("Got LATE for instrument " + symbol
 		// + " , abort");
 		// Stop processing and record we are idle.
-		instruments.update( symbol,
-				    InstrumentsTable.LATE,
-				    InstrumentsTable.IDLE );
+		instruments.update( symbol, InstrumentsTable.LATE, InstrumentsTable.IDLE );
 		return;
 	    }
 	    double base_price = option.getType() == 'C' ? askPrice : bidPrice;
