@@ -12,11 +12,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Hans Vandierendonck
  */
 public class LockFreeHashMap<K,V> implements Map<K, V> {
-    protected BucketListMap<K,V>[] bucket;
-    protected AtomicInteger bucketSize;
-    protected AtomicInteger setSize;
+    protected BucketListMap<K,V>[] bucket; //bucket of maps
+    protected AtomicInteger bucketSize; //max size of the bucket
+    protected AtomicInteger numberOfElements; // amount of maps in the bucket
+    protected AtomicInteger bucketLength; // amount of maps in the bucket
+
     private static final double THRESHOLD = 4.0;
-    private volatile int bucketLength = 0;
+    private static final double factorLoad = 0.75;
+
 
     /**
      * Constructor
@@ -24,23 +27,36 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
      */
 
     public LockFreeHashMap(int capacity) {
-		bucket = (BucketListMap<K,V>[]) new BucketListMap[capacity];
+		bucket = (BucketListMap<K,V>[]) new BucketListMap[16]; //8192
 		bucket[0] = new BucketListMap<K,V>();
-		bucketSize = new AtomicInteger(2);
-		setSize = new AtomicInteger(0);
-		bucketLength = bucket.length;
+		bucketSize = new AtomicInteger(2); //
+		numberOfElements = new AtomicInteger(0);
+        bucketLength = new AtomicInteger(16);
     }
 
     public boolean add(K key, V value) {
 		int myBucket = Math.abs(BucketListMap.hashCode(key) % bucketSize.get());
 		BucketListMap<K,V> b = getBucketListMap(myBucket);
 		if (b.add(key, value) == false) {
-		    System.out.println("Hash Clash");
 			return false;
 		}
-		int setSizeNow = setSize.getAndIncrement();
-		int bucketSizeNow = bucketSize.get();
-		if(setSizeNow / (double)bucketSizeNow > THRESHOLD && 2 * bucketSizeNow <= bucket.length ) { // maximum capacity
+
+		int mapCount = numberOfElements.getAndIncrement();
+        int bucketSizeNow = bucketSize.get();
+
+		System.out.println("Map size and bucket length = " +mapCount + " " + bucket.length);
+
+        if(numberOfElements.get() >= bucket.length * factorLoad) {
+            //resize
+            System.out.println(numberOfElements.get() + " is greater than or equal to " + bucket.length * factorLoad);
+            if (bucketLength.compareAndSet(bucket.length, bucket.length * 2)) {
+                BucketListMap<K, V>[] newBucket = new BucketListMap[bucketLength.get()];
+                System.arraycopy(bucket, 0, newBucket, 0, bucket.length);
+                bucket = newBucket;
+            }
+        }
+
+		if(mapCount/ (double)bucketSizeNow > THRESHOLD && 2 * bucketSizeNow <= bucket.length ) { // maximum capacity
             bucketSize.compareAndSet(bucketSizeNow, 2 * bucketSizeNow);
         }
 		return true;
@@ -49,7 +65,17 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     public boolean remove(K key) {
         int myBucket = Math.abs(BucketListMap.hashCode(key) % bucketSize.get());
         BucketListMap<K, V> b = getBucketListMap(myBucket);
-        return b.remove(key);
+        if(b.remove(key) == false){
+            return false;
+        }else {
+            int previousSize = numberOfElements.get();
+            int setSizeNow = numberOfElements.decrementAndGet();
+            //System.out.println("Set size becomes = " + previousSize +  "  " +setSizeNow);
+            int bucketSizeNow = bucketSize.get();
+            //System.out.println("Bucket size = " + bucketSizeNow);
+
+            return true;
+        }
     }
 
     public boolean contains(K key) {

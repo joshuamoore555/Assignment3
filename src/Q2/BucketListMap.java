@@ -75,7 +75,7 @@ public class BucketListMap<K, V> implements Map<K, V> {
     public boolean contains(K key) {
         boolean[] marked = {false};
         int hash = makeOrdinaryKey(key);
-        Node curr = this.head;
+        Node curr = head;
         while(curr.hash < hash){
             curr = curr.next.getReference();
             Node succ = curr.next.get(marked);
@@ -85,7 +85,7 @@ public class BucketListMap<K, V> implements Map<K, V> {
 
     public V get(K key) {
 		int hash = makeOrdinaryKey(key);
-		Node curr = this.head;
+		Node curr = head;
 		while(curr.hash < hash){
 			curr = curr.next.getReference();
 		}
@@ -102,7 +102,6 @@ public class BucketListMap<K, V> implements Map<K, V> {
             curr = curr.next.getReference();
         }
         return count;
-
     }
 
     public BucketListMap<K,V> getSentinel(int index) {
@@ -199,15 +198,15 @@ public class BucketListMap<K, V> implements Map<K, V> {
 		    while(true){
 		        succ = curr.next.get(marked);
 		        while(marked[0]){
-		            snip = pred.next.compareAndSet(curr,succ,false,false);
+		            snip = pred.next.compareAndSet(curr, succ,false,false);
 		            if(snip == false){
 		                continue retry;
                     }
                     curr = succ;
 		            succ = curr.next.get(marked);
                 }
-                if(curr.hash >=hash){
-		            return new Window(pred,curr);
+                if(curr.hash >= hash){
+		            return new Window(pred, curr);
                 }
                 pred = curr;
                 curr = succ;

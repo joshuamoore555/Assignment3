@@ -27,7 +27,7 @@ public class Workshop {
             try {
                 while (true) {
                     if(elfCount.get() == 0 && reindeerCount.get() == 0){
-                        System.out.println("There are "+ elfCount.get() + " elves and " + reindeerCount.get() + " reindeer so Santa entered");
+                        System.out.println("There are "+ elfCount.get() + " elves and " + reindeerCount.get() + " reindeer so Santa entered " + elfSemaphore.availablePermits());
                         santaSemaphore.acquire();
                         santaCount.getAndIncrement();
 
@@ -35,7 +35,7 @@ public class Workshop {
                         santaSemaphore.release();
                         santaCount.getAndDecrement();
                     }
-                    Thread.sleep(6000);
+                    Thread.sleep(3000);
                 }
             }catch (InterruptedException e) {
                 e.printStackTrace();
@@ -56,12 +56,12 @@ public class Workshop {
                 while (true) {
                     elfSemaphore.release(1);
                     elfCount.getAndIncrement();
-                    System.out.println(name + " entered                 " + elfCount.get() + " "+elfSemaphore.availablePermits());
+                    System.out.println(name + " entered              " + elfCount.get() + " "+elfSemaphore.availablePermits());
 
                     System.out.println(name + " left                 " + elfCount.get()+ " "+elfSemaphore.availablePermits());
                     elfSemaphore.acquire(1);
                     elfCount.getAndDecrement();
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 }
             }catch (InterruptedException e) {
                 e.printStackTrace();
@@ -83,15 +83,15 @@ public class Workshop {
                     if(santaCount.get() == 0 && elfCount.get() >= 4){
                         reindeerSemaphore.acquire(1);
                         elfSemaphore.acquire(2);
-                        System.out.println("                                                                                  "+name + " the Reindeer entered." + " He has " + elfCount.get() + " elves minding him. " + elfSemaphore.availablePermits());
+                        System.out.println(name + " the Reindeer entered." + " He has " + elfCount.get() + " lads minding him. " + elfSemaphore.availablePermits());
                         reindeerCount.getAndIncrement();
 
-                        reindeerCount.getAndDecrement();
+
                         System.out.println("Reindeer left");
                         reindeerSemaphore.release(1);
                         elfSemaphore.release(2);
-
-                        Thread.sleep(6000);
+                        reindeerCount.getAndDecrement();
+                        Thread.sleep(3000);
                     }
                 }
             }catch (InterruptedException e) {
