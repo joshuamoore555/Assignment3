@@ -20,7 +20,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     private static final double THRESHOLD = 4.0;
     private static final double factorLoad = 0.75;
 
-
     /**
      * Constructor
      * @param capacity max number of bucket
@@ -68,12 +67,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
         if(b.remove(key) == false){
             return false;
         }else {
-            int previousSize = numberOfElements.get();
-            int setSizeNow = numberOfElements.decrementAndGet();
-            //System.out.println("Set size becomes = " + previousSize +  "  " +setSizeNow);
-            int bucketSizeNow = bucketSize.get();
-            //System.out.println("Bucket size = " + bucketSizeNow);
-
             return true;
         }
     }
@@ -120,13 +113,4 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
             count = bucket[0].debuggingCountElements();
         return count;
     }
-
-//    public void resize(int length){
-//        if(length == bucketLength) {
-//            BucketListMap<K, V>[] newBucket = new BucketListMap[bucket.length * 2];
-//            bucketLength = newBucket.length;
-//            System.arraycopy(bucket, 0, newBucket, 0, bucket.length);
-//            bucket = newBucket;
-//        }
-//    }
 }

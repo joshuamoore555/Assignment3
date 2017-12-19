@@ -1,4 +1,4 @@
-package Q4;
+package Q3;
 /*
  * PreTrade.java
  *
@@ -6,8 +6,6 @@ package Q4;
  */
 import Q2.LockFreeHashMap;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 import java.lang.Math;
@@ -17,7 +15,6 @@ import java.util.Scanner;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Queue;
 import java.util.ArrayDeque;
 
 // Do not modify this class
