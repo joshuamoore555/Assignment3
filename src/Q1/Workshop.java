@@ -28,7 +28,7 @@ public class Workshop {
                 while (true) {
                     mutex.acquire(1);
                     santaSemaphore.acquire(1);
-                    System.out.println("Santa Waiting..."  + elvesInside.availablePermits()+ "  " + elvesOutside.availablePermits());
+                    System.out.println("Santa Waiting..."  + elvesInside.availablePermits() + "  " + elvesOutside.availablePermits());
                     reindeerSemaphore.acquire(1); //wait for reindeer to leave
                     elvesOutside.acquire(numberOfElves.get()); //wait for elves to be outside
                     mutex.release(1);
