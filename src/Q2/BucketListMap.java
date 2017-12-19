@@ -71,7 +71,6 @@ public class BucketListMap<K, V> implements Map<K, V> {
         }
 	}
 
-
     public boolean contains(K key) {
         boolean[] marked = {false};
         int hash = makeOrdinaryKey(key);
@@ -126,7 +125,6 @@ public class BucketListMap<K, V> implements Map<K, V> {
             }
         }
     }
-
 
     private static int reverse(int key) {
         int loMask = LO_BIT;
