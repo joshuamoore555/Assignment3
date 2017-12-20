@@ -14,7 +14,7 @@ class CoarseGrainHashMap<K,V> implements Map<K,V> {
     private final Lock lock = new ReentrantLock();
 
     CoarseGrainHashMap( int capacity ) {
-	map = new HashMap<>();
+	map = new HashMap<>(capacity);
     }
 
     @Override
