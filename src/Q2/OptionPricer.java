@@ -8,13 +8,14 @@ package Q2;
 import java.util.List;
 import java.util.LinkedList;
 import java.lang.Math;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.io.File;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayDeque;
+import java.util.concurrent.atomic.AtomicLong;
 
 // Do not modify this class
 class Option {
@@ -94,7 +95,7 @@ class InstrumentsTable {
 
     void create( String symbol ) {
         addCount.getAndIncrement();
-        System.out.println("Add Count = " + addCount.get());
+        //System.out.println("Add Count = " + addCount.get());
 	    table.add( symbol, new AtomicInteger( IDLE ) );
     }
 
@@ -191,7 +192,7 @@ public class OptionPricer {
 }
 
 // Do not modify this class.
-class Event {
+class Event implements Comparable {
     static final int TERMINATE = 0;
     static final int TRADE = 1;
     static final int ADDSYM = 2;
@@ -201,11 +202,14 @@ class Event {
     final String symbol;
     final double bidPrice;
     final double askPrice;
+    final static AtomicLong seq = new AtomicLong();
+    final long amount;
 
     Event() {
 	this.type = TERMINATE;
 	this.symbol = null;
 	this.bidPrice = this.askPrice = this.timestamp = 0;
+	amount = seq.getAndIncrement();
     }
 
     Event( int type, long timestamp, String symbol ) {
@@ -213,6 +217,7 @@ class Event {
 	this.timestamp = timestamp;
 	this.symbol = symbol;
 	this.bidPrice = this.askPrice = 0;
+	amount = seq.getAndIncrement();
     }
 
     Event( int type, long timestamp, String symbol, double bidPrice, double askPrice ) {
@@ -221,6 +226,7 @@ class Event {
 	this.symbol = symbol;
 	this.bidPrice = bidPrice;
 	this.askPrice = askPrice;
+	amount = seq.getAndIncrement();
     }
 
     @Override
@@ -238,6 +244,25 @@ class Event {
     @Override
     public String toString() {
 	return new String("symbol:" + symbol +", bidPrice: " + bidPrice + ", askPrice: " + askPrice);
+    }
+
+    @Override
+    public int compareTo(Object s) {
+        final Event o = (Event) s;
+
+        return (int) (o.amount - this.amount);
+
+//        if(o.amount > this.amount){
+//            return 1;
+//        }
+//        else if(o.amount == this.amount) {
+//            return 0;
+//        }else if(o.amount < this.amount) {
+//            return -1;
+//        }
+//        else{
+//            return 0;
+//        }
     }
 }
 
@@ -326,9 +351,9 @@ class EventStream {
 // Do not modify this class, except for the queueing
 class ProcessingThread extends Thread {
     final Valuation val;
-    final LinkedBlockingQueue<Event> queue;
+    final PriorityBlockingQueue<Event> queue;
 
-    ProcessingThread( Valuation val, LinkedBlockingQueue<Event> queue ) {
+    ProcessingThread( Valuation val, PriorityBlockingQueue<Event> queue ) {
 	this.val = val;
 	this.queue = queue;
     }
@@ -362,7 +387,7 @@ class Valuation {
     // You may modify these variables
     private final InstrumentsTable instruments;
     private final OptionsTable options;
-    private final LinkedBlockingQueue<Event> queue;
+    private final PriorityBlockingQueue<Event> queue;
 
     static final boolean verbose = true;
     
@@ -373,7 +398,7 @@ class Valuation {
 	options = new OptionsTable(); //split the options table here
         //put into an array of threads.length
 
-	queue = new LinkedBlockingQueue<Event>();
+	queue = new PriorityBlockingQueue<>();
 	num_analyses = 0;
 	num_late_analyses = 0;
 	NUM_STEPS = numSteps;
@@ -418,11 +443,8 @@ class Valuation {
 		    }
 		    // Pricing is in progress, increment late analyses counter
 		    // and signal the thread to stop processing this instrument
-		    else if( instruments.get( e.symbol ).get()
-			     == InstrumentsTable.BUSY ) {
-			instruments.update( e.symbol,
-					    InstrumentsTable.BUSY,
-					    InstrumentsTable.LATE );
+		    else if( instruments.get( e.symbol ).get() == InstrumentsTable.BUSY ) {
+			instruments.update( e.symbol, InstrumentsTable.BUSY, InstrumentsTable.LATE );
 			num_late_analyses++;
 			if( verbose )
 			    System.out.println("EventLoop: " + e.symbol
@@ -495,8 +517,7 @@ class Valuation {
 
     // The following method may be modified
     // Create an option for an instrument
-    void createOption( String symbol, double strike, double deadline,
-		       double volatility, char type ) {
+    void createOption( String symbol, double strike, double deadline, double volatility, char type ) {
 	// If instrument wat not seen before, create it now.
 	if( instruments.get( symbol ) == null ) {
 	    instruments.create( symbol );
@@ -518,6 +539,7 @@ class Valuation {
 	// Recalculate all options on this instrument
 	long tm_start = System.nanoTime();
 	int num_processed = 0;
+
 
 	for( Option option : options.get( symbol ) ) {
 	    // Abort if a new trade update have arrived
