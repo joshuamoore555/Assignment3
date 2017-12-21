@@ -11,8 +11,8 @@ public class SegmentedHashMap<K,V> implements Map<K,V> {
 
     public SegmentedHashMap(int numseg, int capacity) {
 	    num_segments = numseg;
-        segments = new HashMap[capacity];
-        for(int i = 0; i < capacity; i++){
+        segments = new HashMap[num_segments];
+        for(int i = 0; i < num_segments; i++){
             segments[i] = new HashMap<>();
         }
     }
