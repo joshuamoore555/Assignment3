@@ -2,11 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f8aaf5d0-46a3-4075-810f-3188ce52f301" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Q2/OptionPricer.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Q2/instruments.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Q2/options.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Q2/trace120.txt" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Assignment3/Q2/LockFreeHashMap.class" afterPath="$PROJECT_DIR$/out/production/Assignment3/Q2/LockFreeHashMap.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -23,8 +18,8 @@
       <file leaf-file-name="LockFreeHashMap.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Q2/LockFreeHashMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-153">
-              <caret line="7" column="49" lean-forward="true" selection-start-line="7" selection-start-column="49" selection-end-line="7" selection-end-column="49" />
+            <state relative-caret-position="306">
+              <caret line="46" column="0" lean-forward="true" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -652,7 +647,14 @@
       <option name="project" value="LOCAL" />
       <updated>1513853257081</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="resize">
+      <created>1513853374739</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1513853374739</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -766,7 +768,8 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="added different queueing" />
     <MESSAGE value="resize fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="resize fix" />
+    <MESSAGE value="resize" />
+    <option name="LAST_COMMIT_MESSAGE" value="resize" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1017,8 +1020,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Q2/LockFreeHashMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-153">
-          <caret line="7" column="49" lean-forward="true" selection-start-line="7" selection-start-column="49" selection-end-line="7" selection-end-column="49" />
+        <state relative-caret-position="306">
+          <caret line="46" column="0" lean-forward="true" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
           <folding />
         </state>
       </provider>
