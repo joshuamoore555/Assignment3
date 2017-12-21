@@ -10,9 +10,9 @@ public class SegmentedHashMap<K,V> implements Map<K,V> {
     private final int num_segments;
 
     public SegmentedHashMap(int numseg, int capacity) {
-	    num_segments = numseg;
-        segments = new HashMap[capacity];
-        for(int i = 0; i < capacity; i++){
+        num_segments = numseg;
+        segments = new HashMap[num_segments];
+        for(int i = 0; i < num_segments; i++){
             segments[i] = new HashMap<>();
         }
     }
@@ -26,30 +26,30 @@ public class SegmentedHashMap<K,V> implements Map<K,V> {
     public boolean add(K key, V value) {
         int hashIndex = hash(key);
         HashMap<K,V> segment = segments[hashIndex];
-            if(key == null){
-                return false;
+        if(key == null){
+            return false;
+        }
+        else{
+            synchronized (segment) {
+                segment.put(key, value);
+                return true;
             }
-            else{
-                synchronized (segment) {
-                    segment.put(key, value);
-                    return true;
-                }
-            }
+        }
     }
-    
+
     public boolean remove(K key) {
         int hashIndex = hash(key);
         HashMap<K,V> segment = segments[hashIndex];
-            if (key == null) {
-                return false;
-            } else {
-                synchronized (segment) {
-                    segment.remove(key);
-                    return true;
-                }
-         }
+        if (key == null) {
+            return false;
+        } else {
+            synchronized (segment) {
+                segment.remove(key);
+                return true;
+            }
+        }
     }
-    
+
     public boolean contains(K key) {
         int hashIndex = hash(key);
         HashMap<K, V> segment = segments[hashIndex];
@@ -57,15 +57,15 @@ public class SegmentedHashMap<K,V> implements Map<K,V> {
             return key != null && segment.get(key) != null;
         }
     }
-    
+
     public V get(K key) {
         int hashIndex = hash(key);
         HashMap<K, V> segment = segments[hashIndex];
-            if (key == null) {
-                return null;
-            } else {
-                synchronized (segment) {
-                 return segment.get(key);
+        if (key == null) {
+            return null;
+        } else {
+            synchronized (segment) {
+                return segment.get(key);
             }
         }
     }
