@@ -15,7 +15,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     protected BucketListMap<K,V>[] bucket; //bucket of maps
     protected AtomicInteger bucketSize; //max size of the bucket
     protected AtomicInteger numberOfElements; // amount of maps in the bucket
-    protected AtomicInteger bucketCapacity; // amount of maps in the bucket
 
     private static final double THRESHOLD = 4.0;
     private static final double factorLoad = 0.75;
@@ -30,7 +29,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
         bucket[0] = new BucketListMap<K,V>();
         bucketSize = new AtomicInteger(2);
         numberOfElements = new AtomicInteger(0);
-        bucketCapacity = new AtomicInteger(capacity);
     }
 
     public boolean add(K key, V value) {
@@ -42,21 +40,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
 
         int numElementsNow = numberOfElements.getAndIncrement();
         int bucketSizeNow = bucketSize.get();
-        int bucketLengthNow = bucketCapacity.get();
-        int resize = (int) (bucketLengthNow * factorLoad);
-
-        if(numElementsNow >= resize) {
-            //resize
-            if (bucketCapacity.compareAndSet(numElementsNow, numElementsNow * 2)) {
-                System.out.println(resize + " is at 75% capacity of " + numElementsNow + " - RESIZING");
-                BucketListMap<K, V>[] newBucket = new BucketListMap[bucketCapacity.get()];
-                System.arraycopy(bucket, 0, newBucket, 0, bucketLengthNow);
-                bucket = newBucket;
-            }
-            else{
-                //Already resized
-            }
-        }
 
         if(numElementsNow/ (double)bucketSizeNow > THRESHOLD && 2 * bucketSizeNow <= bucket.length ) { // maximum capacity
             bucketSize.compareAndSet(bucketSizeNow, 2 * bucketSizeNow);
