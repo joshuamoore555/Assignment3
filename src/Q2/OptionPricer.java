@@ -202,8 +202,8 @@ class Event implements Comparable {
     final String symbol;
     final double bidPrice;
     final double askPrice;
-    final static AtomicLong seq = new AtomicLong();
-    final long amount;
+    final static AtomicInteger seq = new AtomicInteger();
+    final int amount;
 
     Event() {
 	this.type = TERMINATE;
@@ -249,20 +249,7 @@ class Event implements Comparable {
     @Override
     public int compareTo(Object s) {
         final Event o = (Event) s;
-
-        return (int) (o.amount - this.amount);
-
-//        if(o.amount > this.amount){
-//            return 1;
-//        }
-//        else if(o.amount == this.amount) {
-//            return 0;
-//        }else if(o.amount < this.amount) {
-//            return -1;
-//        }
-//        else{
-//            return 0;
-//        }
+        return  o.amount - this.amount;
     }
 }
 
@@ -359,18 +346,20 @@ class ProcessingThread extends Thread {
     }
 
     public void run() {
-	// System.out.println( "Thread running" );
+	System.out.println( "Thread running" );
 	while( true ) {
 	    try {
 		Event e = queue.take();
-		//System.out.println("Thread " + this.getId() + " took " + e + "  out of the q");
+		System.out.println("Thread " + this.getId() + " took " + e + "  out of the q");
 		if( !val.processEvent( e ) )
 		    break;
 	    } catch( InterruptedException exc ) {
 		System.err.println( "Exception during join: " + exc );
-	    }
+	    }catch (NullPointerException ee){
+            System.out.println("No longer in queue");
+        }
 	}
-	// System.out.println( "Thread done" );
+	 System.out.println( "Thread done" );
     }
 }
 
@@ -500,6 +489,7 @@ class Valuation {
 		processAddSymbol( e.symbol );
 		break;
 	    case Event.RMVSYM:
+	        System.out.println("Removing: " + e);
 		processRmvSymbol( e.symbol );
 		break;
 	}
