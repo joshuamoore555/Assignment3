@@ -4,9 +4,7 @@ package Q2;/*
  * Created on November 19, 2017
  *
  */
-
 import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * @author Maurice Herlihy
  * @author Hans Vandierendonck
