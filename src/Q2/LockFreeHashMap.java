@@ -40,22 +40,25 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
             return false;
         }
 
-        int numElements = numberOfElements.getAndIncrement();
+        int numElementsNow = numberOfElements.getAndIncrement();
         int bucketSizeNow = bucketSize.get();
+        int bucketLengthNow = bucketCapacity.get();
+        int resize = (int) (bucketLengthNow * factorLoad);
 
-        System.out.println("Map size and bucket length = " + numElements + " " + bucket.length);
-
-        if(numberOfElements.get() >= bucket.length * factorLoad) {
+        if(numElementsNow >= resize) {
             //resize
-            System.out.println(numberOfElements.get() + " is greater than or equal to " + bucket.length * factorLoad);
-            if (bucketCapacity.compareAndSet(bucket.length, bucket.length * 2)) {
+            if (bucketCapacity.compareAndSet(numElementsNow, numElementsNow * 2)) {
+                System.out.println(resize + " is at 75% capacity of " + numElementsNow + " - RESIZING");
                 BucketListMap<K, V>[] newBucket = new BucketListMap[bucketCapacity.get()];
-                System.arraycopy(bucket, 0, newBucket, 0, bucket.length);
+                System.arraycopy(bucket, 0, newBucket, 0, bucketLengthNow);
                 bucket = newBucket;
+            }
+            else{
+                //System.out.println("Already resized");
             }
         }
 
-        if(numElements/ (double)bucketSizeNow > THRESHOLD && 2 * bucketSizeNow <= bucket.length ) { // maximum capacity
+        if(numElementsNow/ (double)bucketSizeNow > THRESHOLD && 2 * bucketSizeNow <= bucket.length ) { // maximum capacity
             bucketSize.compareAndSet(bucketSizeNow, 2 * bucketSizeNow);
         }
         return true;
