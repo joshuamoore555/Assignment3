@@ -17,7 +17,6 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
     protected AtomicInteger numberOfElements; // amount of maps in the bucket
 
     private static final double THRESHOLD = 4.0;
-    private static final double factorLoad = 0.75;
 
     /**
      * Constructor
