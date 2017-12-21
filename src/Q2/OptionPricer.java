@@ -44,7 +44,7 @@ class Option {
 
 // You may modify this class
 class OptionsTable {
-    private final LockFreeHashMap<String, LinkedList<Option>> table = new LockFreeHashMap<String, LinkedList<Option>>(8192);
+    private final SegmentedHashMap<String, LinkedList<Option>> table = new SegmentedHashMap<String, LinkedList<Option>>(16,8192);
     AtomicInteger addCount = new AtomicInteger(0);
     AtomicInteger getCount = new AtomicInteger(0);
 
