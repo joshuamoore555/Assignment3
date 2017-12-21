@@ -356,7 +356,6 @@ class ProcessingThread extends Thread {
 	    } catch( InterruptedException exc ) {
 		System.err.println( "Exception during join: " + exc );
 	    }catch (NullPointerException ee){
-            System.out.println("No longer in queue");
         }
 	}
 	 System.out.println( "Thread done" );
