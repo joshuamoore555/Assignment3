@@ -31,6 +31,7 @@ public class LockFreeHashMap<K,V> implements Map<K, V> {
         bucketSize = new AtomicInteger(2);
         numberOfElements = new AtomicInteger(0);
         bucketCapacity = new AtomicInteger(capacity);
+
     }
 
     public boolean add(K key, V value) {
